@@ -35,7 +35,7 @@ class articles{
     /**
      * @returns {Number}
      */
-    async get_time(){
+    get_time(){
         return (new Date()).getTime()
     }
 
@@ -61,7 +61,9 @@ class articles{
      * @param {string} id 
      */
     async exist_comment(id){
-        var type = this.db.get(`select type from comments where id = ${id}`)
+        var found = await this.db.get(`select type from comments where id = '${id}'`)
+        if (!found) return false
+        var {type} = found
         return type == "comment"
     }
 
@@ -70,7 +72,9 @@ class articles{
      * @returns {boolean}
      */
     async exist_bpgp(id){
-        var type = this.db.get(`select type from comments where id = ${id}`)
+        var found = await this.db.get(`select type from comments where id = '${id}'`)
+        if (!found) return false
+        var {type} = found
         return (type == "bp" || type == "gp")
     }
 
@@ -85,7 +89,7 @@ class articles{
             throw "article.error : articles is not initialzed"
         }
 
-        var id = this.safe_uuid()
+        var id = await this.safe_uuid()
 
         const date = this.get_time()
         await this.db.exec(
@@ -98,22 +102,22 @@ class articles{
      * @param {string} target
      */
     async gp_article(by, target){
-        if (!this.exist_article(target) && !this.exist_comment(target)) throw "article.error : gp target doesn't exist"
-        var condition = (type)=>{return ` where target = ${target} and type = ${type} and by = '${by}'`}
-        var gp_before = this.db.get(`select id from comments`+condition("gp"))
-        var bp_before = this.db.get(`select id from comments`+condition("bp"))
+        if (!await this.exist_article(target) && !await this.exist_comment(target)) throw "article.error : gp target doesn't exist"
+        var condition = (type)=>{return ` where target = '${target}' and type = '${type}' and by = '${by}'`}
+        var gp_before = await this.db.get(`select id from comments`+condition("gp"))
+        var bp_before = await this.db.get(`select id from comments`+condition("bp"))
         var date = this.get_time()
-
-        var id = this.safe_uuid()
+        var id = await this.safe_uuid()
 
         if (!gp_before){
             if (bp_before){
-                this.db.exec(`delete from comments`+condition("bp"))
+                await this.db.exec(`delete from comments`+condition("bp"))
             }
-            this.db.exec(`insert into comments values ('${date}','${id}','${by}','${target}',gp,'',0)`)
+            await this.db.exec(`insert into comments values ('${date}','${id}','${by}','${target}','gp','',0)`)
         }
-
-        this.db.exec(`delete from comments`+condition("gp"))
+        else{
+            await this.db.exec(`delete from comments`+condition("gp"))
+        }
     }
 
     /**
@@ -121,29 +125,30 @@ class articles{
      * @param {string} target
      */
     async bp_article(by, target){
-        if (!this.exist_article(target) && !this.exist_comment(target)) throw "article.error : bp target doesn't exist"
-        var condition = (type)=>{return ` where target = ${target} and type = ${type} and by = '${by}'`}
-        var gp_before = this.db.get(`select id from comments`+condition("gp"))
-        var bp_before = this.db.get(`select id from comments`+condition("bp"))
-
-        var id = this.safe_uuid()
+        if (!await this.exist_article(target) && !await this.exist_comment(target)) throw "article.error : bp target doesn't exist"
+        var condition = (type)=>{return ` where target = '${target}' and type = '${type}' and by = '${by}'`}
+        var gp_before = await this.db.get(`select id from comments`+condition("gp"))
+        var bp_before = await this.db.get(`select id from comments`+condition("bp"))
+        var date = this.get_time()
+        var id = await this.safe_uuid()
 
         if (!bp_before){
             if (gp_before){
-                this.db.exec(`delete from comments`+condition("gp"))
+                await this.db.exec(`delete from comments`+condition("gp"))
             }
-            this.db.exec(`insert into comments values ('${date}','${id}','${by}','${target}',bp,'',0)`)
+            await this.db.exec(`insert into comments values (${date},'${id}','${by}','${target}','bp','',0)`)
         }
-
-        this.db.exec(`delete from comments`+condition("bp"))
+        else{
+            await this.db.exec(`delete from comments`+condition("bp"))
+        }
     }
 
     /**
      * @param {string} id
      */
     async delete_comment(id){
-        if (!this.exist_comment(id)) throw "article.error : comment doesn't exist";
-        this.db.exec(`update comments set state = 1 where id = ${id}`)
+        if (!await this.exist_comment(id)) throw "article.error : comment doesn't exist";
+        await this.db.exec(`update comments set state = 1 where id = '${id}'`)
     }
 
     /**
@@ -152,10 +157,10 @@ class articles{
      * @param {string} content 
      */    
     async create_comment(article, by, content){
-        if (!this.exist_article(article)) throw "article.error : article doesn't exist"
-        var id = this.safe_uuid()
+        if (!await this.exist_article(article)) throw "article.error : article doesn't exist"
+        var id = await this.safe_uuid()
         var date = this.get_time()
-        this.db.exec(`insert into comments values ('${date}','${id}','${by}','${article}',comment,'${content}',0)`)
+        await this.db.exec(`insert into comments values ('${date}','${id}','${by}','${article}','comment','${content}',0)`)
     }
 
     /**
@@ -164,11 +169,11 @@ class articles{
      * @param {string} content 
      */
     async reply_comment(target, by, content){
-        var parent = this.db.get(`select target from comments where id = ${target}`)
-        var id = this.safe_uuid()
+        var parent = (await this.db.get(`select target from comments where id = '${target}'`)).target
+        var id = await this.safe_uuid()
         var date = this.get_time()
-        if (!this.exist_article(parent)) throw "article.error : nested reply is not allowed"
-        this.db.exec(`insert into comments values ('${date}','${id}','${by}','${target}','comment','${content}',0)`)
+        if (!await this.exist_article(parent)) throw "article.error : nested reply is not allowed"
+        await this.db.exec(`insert into comments values (${date},'${id}','${by}','${target}','comment','${content}',0)`)
     }
 
     /**
@@ -178,11 +183,11 @@ class articles{
      */
     async edit_comment(id, by, content){
         var date = this.get_time()
-        if (!this.exist_comment(id)) throw "article.error : comment doesn't exist."
+        if (!await this.exist_comment(id)) throw "article.error : comment doesn't exist."
         var date = this.get_time()
-        var owned = this.db.get(`select by from comments where id = ${id}`)
+        var owned = (await this.db.get(`select by from comments where id = '${id}'`)).by
         if (owned != by) throw "article.error : comment can only edited by it's owner."
-        this.db.exec(`update comments set state = 2, content = '${content}', date = ${date} where id = ${id}`)
+        await this.db.exec(`update comments set state = 2, content = '${content}', date = ${date} where id = '${id}'`)
     }
 
     /**
@@ -190,8 +195,8 @@ class articles{
      * @param {string} lastId
      */
     async query_article_comments(article, lastId){
-        if (!this.exist_comment(article)) throw "article.error : comment doesn't exist."
-        var comments = this.db.get(`select id from comments where target = ${article} and type = comment`)
+        if (!await this.exist_article(article)) throw "article.error : article doesn't exist."
+        var comments = await this.db.all(`select id from comments where target = '${article}' and type = 'comment'`)
         console.log(comments)
     }
 
@@ -201,8 +206,9 @@ class articles{
      * @param {string} id 
      */
     async query_comment(id){
-        if (!this.exist_comment(id)) throw "article.error : comment doesn't exist";
-        var comments = this.db.get(`select * from comments where id = ${id}`)
+        if (!await this.exist_comment(id)) throw "article.error : comment doesn't exist";
+        var comments = await this.db.get(`select * from comments where id = '${id}'`)
+        return comments
     }
 
 }
