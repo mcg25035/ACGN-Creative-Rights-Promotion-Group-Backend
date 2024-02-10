@@ -25,7 +25,7 @@ module.exports = {
      * @returns {boolean}
      */
     async column_exist(db, table, column_name, value){
-        const result = await db.get(`select ${column_name} from ${table} where ${column_name} = ${value}`);
+        const result = await db.get(`select ${column_name} from ${table} where ${column_name} = ?`, value);
         if (result) return true;
         return false;
     }
