@@ -96,6 +96,8 @@ class articles_db{
             `insert into articles values (?,?,?,?,?,?)`
             ,id, post_by, content, thumbnail, title, date
         )
+
+        return id
     }
 
     /**
@@ -113,10 +115,10 @@ class articles_db{
             if (bp_before){
                 await this.db.run(`delete from comments where target = ? and type = ? and by = ?`, target, "bp", by)
             }
-            await this.db.exec(`insert into comments values (?, ?, ?, ?, ?, ?, ?)`, date, id, by, target, "gp", "", 0)
+            await this.db.run(`insert into comments values (?,?,?,?,?,?,?)`, date, id, by, target, "gp", "", 0)
         }
         else{
-            await this.db.exec(`delete from comments where target = ? and type = ? and by = ?`, target, "gp", by)
+            await this.db.run(`delete from comments where target = ? and type = ? and by = ?`, target, "gp", by)
         }
     }
 
@@ -133,12 +135,12 @@ class articles_db{
 
         if (!bp_before){
             if (gp_before){
-                await this.db.exec(`delete from comments where target = ? and type = ? and by = ?`, target, "gp", by)
+                await this.db.run(`delete from comments where target = ? and type = ? and by = ?`, target, "gp", by)
             }
-            await this.db.exec(`insert into comments values (?, ?, ?, ?, ?, ?, ?)`, date, id, by, target, "bp", "", 0)
+            await this.db.run(`insert into comments values (?,?,?,?,?,?,?)`, date, id, by, target, "bp", "", 0)
         }
         else{
-            await this.db.exec(`delete from comments where target = ? and type = ? and by = ?`, target, "bp", by)
+            await this.db.run(`delete from comments where target = ? and type = ? and by = ?`, target, "bp", by)
         }
     }
 
@@ -159,7 +161,8 @@ class articles_db{
         if (!await this.exist_article(article)) throw {code: 404, message: "article doesn't exist"}
         var id = await this.safe_uuid()
         var date = this.get_time()
-        await this.db.run(`insert into comments values (?,?,?,?,?,?,?,?)`, date, id, by, article, "comment", content, 0)
+        await this.db.run(`insert into comments values (?,?,?,?,?,?,?)`, date, id, by, article, "comment", content, 0)
+        return id
     }
 
     /**
@@ -172,7 +175,8 @@ class articles_db{
         var id = await this.safe_uuid()
         var date = this.get_time()
         if (!await this.exist_article(parent)) throw {code: 422, message: "nested reply is not allowed"}
-        await this.db.run(`insert into comments values (?,?,?,?,?,?,?,?)`, date, id, by, target, "comment", content, 0)
+        await this.db.run(`insert into comments values (?,?,?,?,?,?,?)`, date, id, by, target, "comment", content, 0)
+        return id
     }
 
     /**
@@ -195,7 +199,7 @@ class articles_db{
      * @param {string} lastId
      */
     async query_article_comments(article, sortBy, lastId){
-        var allowed_sort = ["date","gp","bp","replies"]
+        var allowed_sort = ["date-sb","date-bs","gp","bp","replies"]
         if (allowed_sort.indexOf(sortBy) == -1) throw {code: 422, message: "invalid sort type."}
         if (!await this.exist_article(article)) throw {code: 403, message: "article doesn't exist."}
         var result = []
@@ -206,7 +210,39 @@ class articles_db{
         }        
 
         result.sort((a,b)=>{
-            if (sortBy == "date") return a.date - b.date
+            if (sortBy == "date-sb") return a.date - b.date
+            if (sortBy == "date-bs") return b.date - a.date
+            if (sortBy == "gp") return a.gp - b.gp
+            if (sortBy == "bp") return a.bp - b.bp
+            if (sortBy == "replies") return a.replies - b.replies
+        })
+
+        
+        var last = lastId ? result.findIndex((element)=>{return element.id == lastId}) : -1
+        result = result.slice(last+1, last+51)
+        
+        return result
+    }
+
+    /**
+     * @param {string} target
+     * @param {string} sortBy
+     * @param {string} lastId
+     */
+    async query_comment_replies(target, sortBy, lastId){
+        var allowed_sort = ["date-sb","date-bs","gp","bp","replies"]
+        if (allowed_sort.indexOf(sortBy) == -1) throw {code: 422, message: "invalid sort type."}
+        if (!await this.exist_comment(target)) throw {code: 403, message: "comment doesn't exist."}
+        var result = []
+        /**@type {Array<Object>} */
+        var comments = await this.db.all(`select id from comments where target = ? and type = ?`, target, "comment")
+        for (var comment of comments){
+            result.push(await this.query_comment(comment.id))
+        }        
+
+        result.sort((a,b)=>{
+            if (sortBy == "date-sb") return a.date - b.date
+            if (sortBy == "date-bs") return b.date - a.date
             if (sortBy == "gp") return a.gp - b.gp
             if (sortBy == "bp") return a.bp - b.bp
             if (sortBy == "replies") return a.replies - b.replies
@@ -245,7 +281,7 @@ class articles_db{
         if (!await this.exist_article(id)) throw {code: 404, message: "article doesn't exist"}
         var date = this.get_time()
         var owned = (await this.db.get(`select post_by from articles where id = ?`, id)).post_by
-        if (owned != by) throw "article.error : article can only edited by it's owner."
+        if (owned != by) throw {code: 403, message: "article can only edited by it's owner."}
         await this.db.run(`update articles set title = ?, content = ?, thumbnail = ?, date = ? where id = ?`, title, content, thumbnail, date, id)
     }
 

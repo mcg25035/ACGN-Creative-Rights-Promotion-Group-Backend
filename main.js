@@ -7,8 +7,6 @@ const app = express()
 app.use(express.json())
 
 const articles_db = require("./articles_db")
-var articles_db_manager = new articles_db()
-
 const articles_api = require("./articles_api")
 
 
@@ -19,8 +17,15 @@ const articles_api = require("./articles_api")
 
 
 
+
 async function main(){
-    await sqlite_init()
+    const db = await open({
+        filename: './database.db',
+        driver: sqlite3.Database
+    })
+
+    const articles_db_manager = new articles_db()
+    await articles_db_manager.init(db)
 
     articles_api.register(app, articles_db_manager)
     
