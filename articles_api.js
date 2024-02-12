@@ -31,8 +31,8 @@ module.exports = {
         app.get('/api/articles/:article_id/comments', async (req, res) => {
             try{
                 var article_id = req.params.article_id
-                var sortBy = req.body.sortBy
-                var lastId = req.body.lastId
+                var sortBy = req.query.sortBy
+                var lastId = req.query.lastId
                 var comments = await articles_db_manager.query_article_comments(article_id, sortBy, lastId)
                 res.status(200).send({comments: comments})
                 return res.end()
@@ -47,8 +47,8 @@ module.exports = {
         app.get('/api/articles/:article_id/comments/:comment_id/replies', async (req, res) => {
             try{
                 var comment_id = req.params.comment_id
-                var sortBy = req.body.sortBy
-                var lastId = req.body.lastId
+                var sortBy = req.query.sortBy
+                var lastId = req.query.lastId
                 var comments = await articles_db_manager.query_comment_replies(comment_id, sortBy, lastId)
                 res.status(200).send({comments: comments})
                 return res.end()
