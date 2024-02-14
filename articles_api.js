@@ -37,6 +37,21 @@ module.exports = {
             }
         })
 
+        app.get('/api/articles/gpbp/:target', async (req, res) => {
+            try{
+                var target = req.params.target
+                var user = debug_utils.get_user_by_request(req)
+                var result = await articles_db_manager.query_bpgp_state(target, user)
+                res.status(200).send(result)
+                return res.end()
+            }
+            catch (exception){
+                res.status(exception.code).send(exception.message)
+                return res.end()
+            }
+            
+        })
+
         
         app.get('/api/articles/:article_id/comments', async (req, res) => {
             try{
