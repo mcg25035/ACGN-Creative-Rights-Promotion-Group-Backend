@@ -10,7 +10,17 @@ module.exports = {
      */
     register : function(app, articles_db_manager){
         app.get('/api/articles', async (req, res) => {
-            // TODO: Implement logic to get articles
+            try{
+                var sortBy = req.query.sortBy
+                var lastId = req.query.lastId
+                var articles = await articles_db_manager.query_articles(sortBy, lastId)
+                res.status(200).send({articles: articles})
+                return res.end()
+            }
+            catch (exception){
+                res.status(exception.code).send(exception.message)
+                return res.end()
+            }
         })
 
         

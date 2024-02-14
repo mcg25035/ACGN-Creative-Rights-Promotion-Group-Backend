@@ -305,7 +305,33 @@ class articles_db{
     async query_article(id){
         if (!await this.exist_article(id)) throw {code: 404, message: "article doesn't exist"}
         var article = await this.db.get(`select * from articles where id = ?`, id)
+        article.bp = (await this.db.get(`select count(*) from comments where target = ? and type = ?`, id, "bp"))["count(*)"]
+        article.gp = (await this.db.get(`select count(*) from comments where target = ? and type = ?`, id, "gp"))["count(*)"]
+        article.comments = (await this.db.get(`select count(*) from comments where target = ? and type = ?`, id, "comment"))["count(*)"]
         return article
+    }
+
+    /**
+     * @param {string} sortBy
+     */
+    async query_articles(sortBy){
+        var allowed_sort = ["date-sb","date-bs","gp","bp","replies"]
+        if (allowed_sort.indexOf(sortBy) == -1) throw {code: 422, message: "invalid sort type."}
+        var articles = await this.db.all(`select id from articles`)
+        var result = []
+        for (var article of articles){
+            result.push(await this.query_article(article.id))
+        }
+
+        result.sort((a,b)=>{
+            if (sortBy == "date-sb") return a.date - b.date
+            if (sortBy == "date-bs") return b.date - a.date
+            if (sortBy == "gp") return a.gp - b.gp
+            if (sortBy == "bp") return a.bp - b.bp
+            if (sortBy == "replies") return a.comments - b.comments
+        })
+
+        return result
     }
 
 
