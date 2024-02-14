@@ -346,9 +346,9 @@ class articles_db{
     async query_bpgp_state(target, by){
         var gp = await this.db.get(`select id from comments where target = ? and type = ? and by = ?`, target, "gp", by)
         var bp = await this.db.get(`select id from comments where target = ? and type = ? and by = ?`, target, "bp", by)
-        if (gp) return 1;
-        if (bp) return -1;
-        return 0;
+        if (gp) return {state: 1};
+        if (bp) return {state: -1};
+        return {state: 0};
     }
 
 
