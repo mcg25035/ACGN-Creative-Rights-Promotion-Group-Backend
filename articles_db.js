@@ -313,9 +313,11 @@ class articles_db{
 
     /**
      * @param {string} sortBy
+     * @param {string} lastId
      */
-    async query_articles(sortBy){
+    async query_articles(sortBy, lastId){
         var allowed_sort = ["date-sb","date-bs","gp","bp","replies"]
+        var lastId = lastId
         if (allowed_sort.indexOf(sortBy) == -1) throw {code: 422, message: "invalid sort type."}
         var articles = await this.db.all(`select id from articles`)
         var result = []
@@ -330,6 +332,9 @@ class articles_db{
             if (sortBy == "bp") return a.bp - b.bp
             if (sortBy == "replies") return a.comments - b.comments
         })
+
+        var last = lastId ? result.findIndex((element)=>{return element.id == lastId}) : -1
+        result = result.slice(last+1, last+51)
 
         return result
     }
