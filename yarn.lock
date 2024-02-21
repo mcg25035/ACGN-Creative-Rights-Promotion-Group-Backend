@@ -554,6 +554,19 @@ http-proxy-agent@^4.0.1:
     agent-base "6"
     debug "4"
 
+httpntlm@1.6.1:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/httpntlm/-/httpntlm-1.6.1.tgz#ad01527143a2e8773cfae6a96f58656bb52a34b2"
+  integrity sha512-Tcz3Ct9efvNqw3QdTl3h6IgRRlIQxwKkJELN/aAIGnzi2xvb3pDHdnMs8BrxWLV6OoT4DlVyhzSVhFt/tk0lIw==
+  dependencies:
+    httpreq ">=0.4.22"
+    underscore "~1.7.0"
+
+httpreq@>=0.4.22:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/httpreq/-/httpreq-1.1.1.tgz#b8818316cdfd6b1bfb0f68b822fa1306cd24be68"
+  integrity sha512-uhSZLPPD2VXXOSN8Cni3kIsoFHaU2pT/nySEU/fHr/ePbqHYr0jeiQRmUKLEirC09SFPsdMoA7LU7UXMd/w0Kw==
+
 https-proxy-agent@^5.0.0:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/https-proxy-agent/-/https-proxy-agent-5.0.1.tgz#c59ef224a04fe8b754f3db0063a25ea30d0005d6"
@@ -854,6 +867,37 @@ node-gyp@8.x:
     tar "^6.1.2"
     which "^2.0.2"
 
+nodemailer-fetch@1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/nodemailer-fetch/-/nodemailer-fetch-1.6.0.tgz#79c4908a1c0f5f375b73fe888da9828f6dc963a4"
+  integrity sha512-P7S5CEVGAmDrrpn351aXOLYs1R/7fD5NamfMCHyi6WIkbjS2eeZUB/TkuvpOQr0bvRZicVqo59+8wbhR3yrJbQ==
+
+nodemailer-shared@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/nodemailer-shared/-/nodemailer-shared-1.1.0.tgz#cf5994e2fd268d00f5cf0fa767a08169edb07ec0"
+  integrity sha512-68xW5LSyPWv8R0GLm6veAvm7E+XFXkVgvE3FW0FGxNMMZqMkPFeGDVALfR1DPdSfcoO36PnW7q5AAOgFImEZGg==
+  dependencies:
+    nodemailer-fetch "1.6.0"
+
+nodemailer-smtp-transport@^2.7.4:
+  version "2.7.4"
+  resolved "https://registry.yarnpkg.com/nodemailer-smtp-transport/-/nodemailer-smtp-transport-2.7.4.tgz#0d89af019a144a480fd8ecc99997d9f838f13685"
+  integrity sha512-1e86YhJ633OZWk3OHWS5TpuoYXG/LtY2/RzNiB5+EkFifDdqHCNHBnExd5cobx0ZSHJLNGM8EKnDuHRFIjFi6Q==
+  dependencies:
+    nodemailer-shared "1.1.0"
+    nodemailer-wellknown "0.1.10"
+    smtp-connection "2.12.0"
+
+nodemailer-wellknown@0.1.10:
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/nodemailer-wellknown/-/nodemailer-wellknown-0.1.10.tgz#586db8101db30cb4438eb546737a41aad0cf13d5"
+  integrity sha512-/VV4mjAEjfm2fn0loUvrpjvugw5rgurNjPO4WU24CuVSoeumsyLOTgaEWG8WoGdPxh1biOAp5JxDoy1hlA2zsw==
+
+nodemailer@^6.9.9:
+  version "6.9.9"
+  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-6.9.9.tgz#4549bfbf710cc6addec5064dd0f19874d24248d9"
+  integrity sha512-dexTll8zqQoVJEZPwQAKzxxtFn0qTnjdQTchoU6Re9BUUGBJiOy3YMn/0ShTW6J5M0dfQ1NeDeRTTl4oIWgQMA==
+
 nopt@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/nopt/-/nopt-5.0.0.tgz#530942bb58a512fccafe53fe210f13a25355dc88"
@@ -1114,6 +1158,14 @@ smart-buffer@^4.2.0:
   resolved "https://registry.yarnpkg.com/smart-buffer/-/smart-buffer-4.2.0.tgz#6e1d71fa4f18c05f7d0ff216dd16a481d0e8d9ae"
   integrity sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==
 
+smtp-connection@2.12.0:
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/smtp-connection/-/smtp-connection-2.12.0.tgz#d76ef9127cb23c2259edb1e8349c2e8d5e2d74c1"
+  integrity sha512-UP5jK4s5SGcUcqPN4U9ingqKt9mXYSKa52YhqxPuMecAnUOsVJpOmtgGaOm1urUBJZlzDt1M9WhZZkgbhxQlvg==
+  dependencies:
+    httpntlm "1.6.1"
+    nodemailer-shared "1.1.0"
+
 socks-proxy-agent@^6.0.0:
   version "6.2.1"
   resolved "https://registry.yarnpkg.com/socks-proxy-agent/-/socks-proxy-agent-6.2.1.tgz#2687a31f9d7185e38d530bef1944fe1f1496d6ce"
@@ -1245,6 +1297,11 @@ type-is@~1.6.18:
   dependencies:
     media-typer "0.3.0"
     mime-types "~2.1.24"
+
+underscore@~1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.7.0.tgz#6bbaf0877500d36be34ecaa584e0db9fef035209"
+  integrity sha512-cp0oQQyZhUM1kpJDLdGO1jPZHgS/MpzoWYfe9+CM2h/QGDZlqwT2T3YGukuBdaNJ/CAPoeyAZRRHz8JFo176vA==
 
 unique-filename@^1.1.1:
   version "1.1.1"
