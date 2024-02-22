@@ -51,7 +51,7 @@ class user_db{
     db
     email_verifing = {}
 
-    static send_email(subject, text, to){
+    send_email(subject, text, to){
         return new Promise((resolve, reject)=>{
             var mailOptions = {
                 from: "noreply.acgn.rights.promotion@gmail.com",
@@ -75,7 +75,7 @@ class user_db{
      * @param {string} email
      * @returns {Object}
      */
-    static async get_verify_code(user_id, email){
+    async get_verify_code(user_id, email){
         if(!this.db_init) throw new Error("db not initialized")
         if (await this.exist_email(email)) return null
         var data = {code: uuid.v4(), end_time: Date.now() + 1000 * 5 * 10, user_id: user_id}
@@ -87,7 +87,7 @@ class user_db{
     /**
      * @returns {id_verify_data}
      */
-    static empty_id_verify_data(){
+    empty_id_verify_data(){
         return {
             verified_state: 0,
             verified_time: null,
@@ -97,7 +97,7 @@ class user_db{
     }
     
     /**@param {sqlite3.Database} db  */
-    static async init(db){
+    async init(db){
         this.db = db
         await db_utils.create_table(db, "user_data", [
             "user_id",
@@ -119,7 +119,7 @@ class user_db{
      * @param {string} user_id 
      * @returns {boolean}
      */
-    static async exist_user(user_id){
+    async exist_user(user_id){
         if(!this.db_init) throw new Error("db not initialized")
         return await db_utils.column_exist(this.db, "user_data", "user_id", user_id)
     }
@@ -128,7 +128,7 @@ class user_db{
      * @param {string} email
      * @returns {boolean}
      */
-    static async exist_email(email){
+    async exist_email(email){
         if(!this.db_init) throw new Error("db not initialized")
         return await db_utils.column_exist(this.db, "user_data", "email", email)
     }
@@ -137,7 +137,7 @@ class user_db{
      * @param {string} user_id 
      * @returns {string}
      */
-    static async safe_username(user_id){
+    async safe_username(user_id){
         if(!this.db_init) throw new Error("db not initialized")
         var raw_user_id = user_id
         var suffix = 0
@@ -149,6 +149,12 @@ class user_db{
 
         return user_id
     }
+
+    async get_user_data(user_id){
+        if(!this.db_init) throw new Error("db not initialized")
+        await this.db.get(`SELECT * FROM user_data WHERE user_id = ?`, user_id)
+        delete user_data.password
+    }
         
 
     /**
@@ -156,7 +162,7 @@ class user_db{
      * @param {string} password
      * @param {string} email 
      */
-    static async create_normal(user_id, password){
+    async create_normal(user_id, password){
         if(!this.db_init) throw new Error("db not initialized")
 
         user_id = await this.safe_username(user_id)
@@ -170,14 +176,15 @@ class user_db{
         this.db.run(
             `INSERT INTO user_data (user_id, password, email, permission, nickname, realname, is_member, id_verify_data, avatar, self_description_article)`
             +` VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            user_id, password, null, permission, nickname, realname, is_member, JSON.stringify(id_verify_data), avatar, null
+            user_id, password, null, permission, nickname, realname, is_member, JSON.stringify(id_verify_data), avatar, self_description_article
         )
+        return {user_id: user_id}
     }
 
     /**
      * @param {user_data} config 
      */
-    static async user_config(config){
+    async user_config(config){
         if(!this.db_init) throw new Error("db not initialized")
         
         var user_id = config.user_id
@@ -220,7 +227,7 @@ class user_db{
      * @param {string} code
      * @param {string} email
      */
-    static async verify(code, email){
+    async verify(code, email){
         if (this.email_verifing[email]){
             throw {code: 404, message: "email not found"}
         }
@@ -239,7 +246,7 @@ class user_db{
     /**
      * @param {string} user_id 
      */
-    static async delete_user(user_id){
+    async delete_user(user_id){
         if(!this.db_init) throw new Error("db not initialized")
         await db_utils.delete(this.db, "user_data", "userId", user_id)
     }

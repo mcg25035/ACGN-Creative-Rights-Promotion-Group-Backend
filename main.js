@@ -17,6 +17,7 @@ app.use((req, res, next) => {
 
 const articles_db = require("./articles_db")
 const articles_api = require("./articles_api")
+const user_db = require("./user_db")
 
 
 
@@ -35,6 +36,11 @@ async function main(){
 
     const articles_db_manager = new articles_db()
     await articles_db_manager.init(db)
+
+    const user_db_manager = new user_db()
+    await user_db_manager.init(db)
+    
+    
 
     articles_api.register(app, articles_db_manager)
     
