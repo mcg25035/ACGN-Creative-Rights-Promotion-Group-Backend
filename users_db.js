@@ -16,7 +16,7 @@ var transporter = nodemailer.createTransport(smtpTransport({
 
 
 
-class user_db{
+class users_db{
     // userId permission nickname realname isMember idVerifyData bpCount gpCount 
 
     /**
@@ -51,6 +51,19 @@ class user_db{
     db
     email_verifing = {}
 
+    /**
+     * @returns {string}
+     */
+    six_digit_code(){
+        return Math.floor(Math.random() * 1000000).toString().padStart(6, "0")
+    }
+
+    /**
+     * @param {string} subject 
+     * @param {string} text 
+     * @param {string} to 
+     * @returns 
+     */
     send_email(subject, text, to){
         return new Promise((resolve, reject)=>{
             var mailOptions = {
@@ -73,13 +86,13 @@ class user_db{
     /**
      * @param {string} user_id
      * @param {string} email
-     * @returns {Object}
+     * @returns {string}
      */
     async get_verify_code(user_id, email){
         if(!this.db_init) throw new Error("db not initialized")
         if (await this.exist_email(email)) return null
-        var data = {code: uuid.v4(), end_time: Date.now() + 1000 * 5 * 10, user_id: user_id}
-        this.email_verifing[email] = data.code
+        var data = {code: this.six_digit_code(), end_time: Date.now() + 1000 * 60 * 10, user_id: user_id}
+        this.email_verifing[email] = data
         return data.code
     }
 
@@ -150,10 +163,15 @@ class user_db{
         return user_id
     }
 
+    /**
+     * @param {string} user_id 
+     * @returns {user_data}
+     */
     async get_user_data(user_id){
         if(!this.db_init) throw new Error("db not initialized")
-        await this.db.get(`SELECT * FROM user_data WHERE user_id = ?`, user_id)
+        var user_data = await this.db.get(`SELECT * FROM user_data WHERE user_id = ?`, user_id)
         delete user_data.password
+        return user_data
     }
         
 
@@ -194,17 +212,8 @@ class user_db{
         var nickname = config.nickname
         var realname = config.realname 
         var avatar = config.avatar
-        
-        if (email){
-            this.get_verify_code()
-            try{
-                await this.send_email("ACGN Rights Promotion Email Verification", `Your verification code is ${this.email_verifing[email].code}`, email)
-            }
-            catch(err){
-                console.log(err)
-                throw {code: 500, message: "email send failed, please try again later"}
-            }
-        }
+        var self_description_article = config.self_description_article
+        var user_email = await this.db.get(`SELECT email FROM user_data WHERE user_id = ?`, user_id)
 
         if (password){
             this.db.run(`UPDATE user_data SET password = ? WHERE user_id = ?`, password, user_id)
@@ -221,6 +230,21 @@ class user_db{
         if (avatar){
             this.db.run(`UPDATE user_data SET avatar = ? WHERE user_id = ?`, avatar, user_id)
         }
+
+        if (self_description_article){
+            this.db.run(`UPDATE user_data SET self_description_article = ? WHERE user_id = ?`, self_description_article, user_id)
+        }
+        
+        if (email && email != user_email){
+            var verify_code = await this.get_verify_code(user_id, email)
+            try{
+                await this.send_email("ACGN Rights Promotion Email Verification", `Your verification code is ${verify_code}`, email)
+            }
+            catch(err){
+                console.log(err)
+                throw {code: 500, message: "email send failed, please try again later"}
+            }
+        }
     }
 
     /**
@@ -228,11 +252,11 @@ class user_db{
      * @param {string} email
      */
     async verify(code, email){
-        if (this.email_verifing[email]){
+        if (!this.email_verifing[email]){
             throw {code: 404, message: "email not found"}
         }
 
-        if (this.email_verifing[email] !== code){
+        if (this.email_verifing[email].code !== code){
             throw {code: 403, message: "code not match"}
         }
 
@@ -241,6 +265,7 @@ class user_db{
         }
 
         this.db.run(`UPDATE user_data SET email = ? WHERE user_id = ?`, email, this.email_verifing[email].user_id)
+        delete this.email_verifing[email]
     }
 
     /**
@@ -251,7 +276,19 @@ class user_db{
         await db_utils.delete(this.db, "user_data", "userId", user_id)
     }
 
+    /**
+     * @param {string} user_id
+     * @param {string} password
+     * @returns {boolean}
+     */
+    async auth(user_id, password){
+        if(!this.db_init) throw new Error("db not initialized")
+        var user_data = await this.db.get(`SELECT password FROM user_data WHERE user_id = ?`, user_id)
+        if (!user_data) return false
+        return user_data.password == password
+    }
+
 
 }
 
-module.exports = user_db
+module.exports = users_db

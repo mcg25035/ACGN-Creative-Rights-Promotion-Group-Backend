@@ -2,8 +2,8 @@ const sqlite3 = require("sqlite3")
 const {open} = require("sqlite")
 const db = new sqlite3.Database("data")
 const db_utils = require("./db_utils")
-const user_db = require("./user_db")
 const express = require("express")
+const session = require("express-session")
 const app = express()
 app.use(express.json())
 
@@ -14,10 +14,19 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(session({
+    secret: "test",
+    resave: false,
+    cookie: {maxAge: 600000}
+}))
+
+
+
 
 const articles_db = require("./articles_db")
 const articles_api = require("./articles_api")
-const user_db = require("./user_db")
+const users_db = require("./users_db")
+const users_api = require("./users_api")
 
 
 
@@ -37,12 +46,13 @@ async function main(){
     const articles_db_manager = new articles_db()
     await articles_db_manager.init(db)
 
-    const user_db_manager = new user_db()
-    await user_db_manager.init(db)
+    const users_db_manager = new users_db()
+    await users_db_manager.init(db)
     
     
 
     articles_api.register(app, articles_db_manager)
+    users_api.register(app, users_db_manager)
     
     app.listen(3000, ()=>{
         console.log("Server is running on port 3000")

@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.2",
+    "express-session": "^1.18.0",
     "nodemailer": "^6.9.9",
     "nodemailer-smtp-transport": "^2.7.4",
     "sqlite": "^5.1.1",
