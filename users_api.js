@@ -37,9 +37,9 @@ module.exports = {
             }
         })
 
-        app.put("/api/users/login", async (req, res)=>{
+        app.put("/api/users/:user_id/login", async (req, res)=>{
             try{
-                const user_id = req.body.user_id
+                const user_id = req.params.user_id
                 const password = req.body.password
                 if (!password) throw {code: 400, message: "password is needed"}
                 const user_data = await users_db_manager.auth(user_id, password)
