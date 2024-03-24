@@ -37,6 +37,18 @@ module.exports = {
             }
         })
 
+        app.get("/api/users/get_login_state", async (req, res)=>{
+            try{
+                const user_id = users_session.get_user_from_session(req.session.user_id)
+                if (!user_id) throw {code: 403, message: "not logged in"}
+                const user_data = await users_db_manager.get_user_data(user_id)
+                res.status(200).send(user_data)
+            }
+            catch(e){
+                res.status(e.code).send(e.message)
+            }
+        })
+
         app.put("/api/users/:user_id/login", async (req, res)=>{
             try{
                 const user_id = req.params.user_id
