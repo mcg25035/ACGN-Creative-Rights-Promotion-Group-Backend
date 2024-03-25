@@ -39,6 +39,7 @@ module.exports = {
 
         app.get("/api/users/get_login_state", async (req, res)=>{
             try{
+                console.log(req.session)
                 const user_id = users_session.get_user_from_session(req.session.user_id)
                 if (!user_id) throw {code: 403, message: "not logged in"}
                 const user_data = await users_db_manager.get_user_data(user_id)
@@ -57,6 +58,7 @@ module.exports = {
                 const user_data = await users_db_manager.auth(user_id, password)
                 if (!user_data) throw {code: 403, message: "auth failed"}
                 req.session.user_id = users_session.create_session(user_id)
+                console.log(req.session)
                 res.status(200).send("login success")
             }
             catch(e){

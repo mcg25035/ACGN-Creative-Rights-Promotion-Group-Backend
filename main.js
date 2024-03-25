@@ -4,6 +4,7 @@ const db = new sqlite3.Database("data")
 const db_utils = require("./db_utils")
 const express = require("express")
 const session = require("express-session")
+const cors = require("cors")
 const app = express()
 app.use(express.json())
 
@@ -14,10 +15,15 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true
+}))
+
 app.use(session({
     secret: "test",
     resave: false,
-    cookie: {maxAge: 600000}
+    cookie: {}
 }))
 
 
