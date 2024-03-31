@@ -7,7 +7,8 @@ class debug_utils {
         "admin": 2,
         "codingbear2": 1,
         "codingbear4": 1,
-        "codingbear3": 0
+        "codingbear3": 0,
+        "test": 1
     }
     /**
     * @param {express.Request} req 
