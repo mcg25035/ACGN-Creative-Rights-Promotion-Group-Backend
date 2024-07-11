@@ -23,6 +23,18 @@ module.exports = {
             }
         })
 
+        app.get('/api/articles/count', async (req, res) => {
+            try{
+                var count = await articles_db_manager.query_article_count()
+                res.status(200).send({count: count})
+                return res.end()
+            }
+            catch (exception){
+                res.status(exception.code).send(exception.message)
+                return res.end()
+            }
+        })
+
         
         app.get('/api/articles/:article_id', async (req, res) => {
             try{

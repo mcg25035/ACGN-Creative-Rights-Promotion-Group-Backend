@@ -200,12 +200,11 @@ class users_db{
     }
 
     /**
+     * @param {user_id} string
      * @param {user_data} config 
      */
-    async user_config(config){
+    async user_config(user_id, config){
         if(!this.db_init) throw new Error("db not initialized")
-        
-        var user_id = config.user_id
         if (this.exist_user(user_id))
         var password = config.password
         var email = config.email

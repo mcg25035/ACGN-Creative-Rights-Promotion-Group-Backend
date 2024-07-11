@@ -3,12 +3,9 @@ class debug_utils {
         "allow_bpgp": 0,
         "allow_post": 1,
         "allow_admin": 2,
-        "codingbear": 2,
         "admin": 2,
-        "codingbear2": 1,
-        "codingbear4": 1,
-        "codingbear3": 0,
-        "test": 1
+        "stone_wolf": 2,
+        "web_dev_group": 2
     }
     /**
     * @param {express.Request} req 

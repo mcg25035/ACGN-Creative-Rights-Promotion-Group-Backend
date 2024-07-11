@@ -13,6 +13,8 @@ module.exports = {
      * @param {users_db} users_db_manager
      */
     register : function(app, users_db_manager){
+        // app.get("/api/")
+
         app.get("/api/users/safe_username/:username", async (req, res)=>{
             try{
                 const result = await users_db_manager.safe_username(req.params.username)
@@ -94,7 +96,7 @@ module.exports = {
                     throw {code: 403, message: "only account owner can modify self's data"}
                 }
                 if (user_data){
-                    await users_db_manager.user_config(user_data)   
+                    await users_db_manager.user_config(user_id, user_data)   
                     res.status(200).send("update complete")
                 }
                 else{

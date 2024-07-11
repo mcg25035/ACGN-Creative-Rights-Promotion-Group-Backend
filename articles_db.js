@@ -193,6 +193,10 @@ class articles_db{
         await this.db.run(`update comments set state = ?, content = ?, date = ? where id = ?`, 2, content, date, id)
     }
 
+    async query_article_count(){
+        return (await this.db.get(`select count(*) from articles`))["count(*)"]
+    }
+
     /**
      * @param {string} article
      * @param {string} sortBy
@@ -334,7 +338,7 @@ class articles_db{
         })
 
         var last = lastId ? result.findIndex((element)=>{return element.id == lastId}) : -1
-        result = result.slice(last+1, last+51)
+        result = result.slice(last+1, last+11)
 
         return result
     }
