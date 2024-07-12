@@ -68,6 +68,20 @@ module.exports = {
             }
         })
 
+        app.put("/api/users/:user_id/logout", async (req, res)=>{
+            try{
+                const user_id = users_session.get_user_from_session(req.session.user_id)
+                if (user_id != req.params.user_id) throw {code: 403, message: "not user's session"}
+                users_session.delete_user_session(user_id)
+                req.session.destroy()
+                res.status(200).end("logout success")
+            }
+            catch(e){
+                // console.error(e)
+                res.status(500).send(e.message)
+            }
+        })
+
 
         app.get("/api/users/:user_id", async (req, res)=>{
             try{

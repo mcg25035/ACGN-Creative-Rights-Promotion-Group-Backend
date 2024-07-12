@@ -8,13 +8,25 @@ class users_session{
      * @returns {string}
      */
     static create_session(user_id){
-        const session_id = uuid.v4()
+        var session_id = uuid.v4()
+        while (users_session.sessions[session_id]) session_id = uuid.v4()
 
         users_session.sessions[session_id] = {user_id: user_id, expired: setTimeout(()=>{
             delete users_session.sessions[session_id]
         }, 1000*60*60*12)}
 
         return session_id
+    }
+
+    static delete_session(session_id){
+        delete users_session.sessions[session_id]
+    }
+
+    static delete_user_session(user_id){
+        for (var session_id in users_session.sessions){
+            if (users_session.sessions[session_id].user_id != user_id) continue;
+            this.delete_session(session_id)
+        }
     }
 
     /**
